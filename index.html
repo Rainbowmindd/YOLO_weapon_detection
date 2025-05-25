@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weapon Detection</title>
+  <style>
+    #preview {
+      max-width: 500px;
+      border: 1px solid #ccc;
+    }
+    #log {
+      margin-top: 10px;
+      font-family: monospace;
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weapon Detection</h1>
+
+  <input type="file" id="fileInput" accept="image/*" />
+  <button onclick="uploadImage()">Check</button>
+  <button onclick="openCamera()">Use Camera</button>
+  <p id="result"></p>
+
+  <img id="imagePreview" style="max-width: 500px;" />
+  <div id="log"></div>
+
+  <video id="video" width="500" autoplay style="display:none;"></video>
+  <button id="capture" onclick="capturePhoto()" style="display:none;">Capture</button>
+
+  <script>
+    let currentImage = null;
+
+    function openCamera() {
+      const video = document.getElementById('video');
+      const captureButton = document.getElementById('capture');
+
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+          video.style.display = 'block';
+          captureButton.style.display = 'inline';
+        })
+        .catch(err => console.error('Camera error:', err));
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('video');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.style.display = 'none';
+      document.getElementById('capture').style.display = 'none';
+
+      canvas.toBlob(blob => {
+        currentImage = blob;
+        const url = URL.createObjectURL(blob);
+        showImage(url);
+      }, 'image/jpeg');
+    }
+
+    function showImage(src) {
+      const img = document.getElementById('imagePreview');
+      img.src = src;
+    }
+
+    async function uploadImage() {
+      const fileInput = document.getElementById('fileInput');
+
+      if (fileInput.files.length > 0) {
+        currentImage = fileInput.files[0];
+        const url = URL.createObjectURL(currentImage);
+        showImage(url);
+      }
+
+      if (!currentImage) {
+        alert('No image selected');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', currentImage);
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/detect', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        const result = document.getElementById('result');
+        const log = document.getElementById('log');
+
+        if (data.detected) {
+          result.textContent = 'Weapon detected!';
+        } else {
+          result.textContent = 'No weapon detected.';
+        }
+
+        // Show detection details
+        log.innerHTML = data.detections.map((d, i) =>
+        `#${i + 1}: <strong>${d.label}</strong> - ${(d.confidence * 100).toFixed(2)}%`
+        ).join('<br>') || 'No detections to display.';
+
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('result').textContent = 'Error during detection.';
+        document.getElementById('log').textContent = '';
+      }
+    }
+  </script>
+</body>
+</html>
