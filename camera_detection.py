@@ -4,18 +4,15 @@ import os
 from datetime import datetime
 import shutil
 
-# Folder na detekcje
 output_dir = 'detected_weapons'
 
-# Usuń stary folder i utwórz pusty na nowo
 if os.path.exists(output_dir):
     shutil.rmtree(output_dir)
 os.makedirs(output_dir)
 
-# Załaduj model
-model = YOLO('best.pt')
 
-# Włącz kamerę
+model = YOLO('./models/best.pt')
+
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("Nie udało się otworzyć kamery")
@@ -50,13 +47,13 @@ while True:
         cv2.imwrite(filename, frame)
         print(f'[ALERT] Wykryto broń! Zapisano: {filename}')
 
-        # ALERT w prawym dolnym rogu
+     
         alert_text = "ALERT: Weapon detected!"
         (tw, th), _ = cv2.getTextSize(alert_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)
         x_alert = frame.shape[1] - tw - 20
         y_alert = frame.shape[0] - 20
 
-        # Tło + tekst
+  
         cv2.rectangle(frame, (x_alert - 10, y_alert - th - 10), 
                              (x_alert + tw + 10, y_alert + 10), (0, 0, 255), -1)
         cv2.putText(frame, alert_text, (x_alert, y_alert),

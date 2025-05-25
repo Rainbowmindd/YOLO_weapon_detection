@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weapon Detection</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Weapon Detection</h1>
+
+    <div class="controls">
+      <input type="file" id="fileInput" accept="image/*">
+      <button onclick="uploadImage()">Check</button>
+      <button onclick="openCamera()">Use Camera</button>
+    </div>
+
+    <p id="result"></p>
+
+    <img id="imagePreview" class="preview" />
+    <div id="log" class="log"></div>
+
+    <video id="video" width="500" autoplay style="display:none;"></video>
+    <button id="capture" onclick="capturePhoto()" style="display:none;">Capture</button>
+  </div>
+
+  <script src="app_front.js"></script>
+</body>
+</html>
