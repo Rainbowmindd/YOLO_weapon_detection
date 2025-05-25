@@ -7,7 +7,7 @@ import io
 app = Flask(__name__)
 CORS(app)
 
-model = YOLO('./best.pt')
+model = YOLO('./models/best.pt')
 print("Model classes:", model.names)
 
 @app.route('/detect', methods=['POST'])
